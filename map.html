@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: gap:">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yandex Map</title>
+  <script src="https://api-maps.yandex.ru/2.1/?apikey=f4a4f4eb-defd-4bc6-9f44-6bfe50a5157f
+    &lang=en_RU" type="text/javascript"></script>
+  <style>
+    html,
+    body,
+    #map {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map">
+    <!-- <h1 style="position: absolute; z-index: 2; 
+      margin-top: 300px; text-align: center;">Hey</h1> -->
+  </div>
+  <script type="text/javascript">
+    const consoleLog = (type, log) => window.ReactNativeWebView.postMessage(JSON.stringify({'type': 'Console', 'data': {'type': type, 'log': log}}));
+  console = {
+      log: (log) => consoleLog('log', log),
+      debug: (log) => consoleLog('debug', log),
+      info: (log) => consoleLog('info', log),
+      warn: (log) => consoleLog('warn', log),
+      error: (log) => consoleLog('error', log),
+    };
+    
+    ymaps.ready(init);
+    function init() {
+      var myMap = new ymaps.Map("map", {
+        center: [41.322093, 69.253952],
+        zoom: 16
+      });
+      let myPlacemark;
+      myMap.events.add('click', function (e) {
+        console.log("Success");
+        var coords = e.get('coords');
+        window.ReactNativeWebView.postMessage(JSON.stringify(coords));
+        
+        if (myPlacemark) {
+          myPlacemark.geometry.setCoordinates(coords);
+        } else {
+          myPlacemark = new ymaps.Placemark(coords, {
+            hintContent: 'Clicked location',
+          });
+          
+          myMap.geoObjects.add(myPlacemark);
+        }
+        myMap.panTo(coords, {duration: 500});
+      });
+    }
+  </script>
+</body>
+
+</html>
