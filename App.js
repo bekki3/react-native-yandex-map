@@ -1,11 +1,11 @@
 import { View } from "react-native";
-import Main from "./Main";
+import Map from "./Map";
 
 export default function App() {
     
     return (
         <View style={{ flex: 1 }}>
-            <Main />
+            <Map />
         </View>
     );
 }

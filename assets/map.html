@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: gap:">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yandex Map</title>
+  <script src="https://api-maps.yandex.ru/2.1/?apikey=f4a4f4eb-defd-4bc6-9f44-6bfe50a5157f&lang=en_RU"
+    type="text/javascript"></script>
+</head>
+
+<body>
+  <div id="map"></div>
+  <input type="text" id="searchInputFrom" placeholder="From:" />
+  <input type="text" id="searchInputTo" placeholder="Destination:" />
+  <button id="createRoute" onclick="createRoute()">Create Route</button>
+
+
+  <script type="text/javascript">
+
+    //To pass console log to React Native App
+    const consoleLog = (type, log) => window.ReactNativeWebView.postMessage(JSON.stringify({ 'type': 'Console', 'data': { 'type': type, 'log': log } }));
+    console = {
+      log: (log) => consoleLog('log', log),
+      debug: (log) => consoleLog('debug', log),
+      info: (log) => consoleLog('info', log),
+      warn: (log) => consoleLog('warn', log),
+      error: (log) => consoleLog('error', log),
+    };
+
+    let createRoute
+
+    ymaps.ready(() => {
+      let coordsFrom = [], coordsTo = [];
+      let suggestViewFunc;
+      let myPlacemark;
+      const suggestViewFrom = new ymaps.SuggestView(document.getElementById('searchInputFrom'));
+      const suggestViewTo = new ymaps.SuggestView(document.getElementById('searchInputTo'));
+
+      var myMap = new ymaps.Map("map", {
+        center: [41.322093, 69.253952],
+        zoom: 16
+      });
+
+      myMap.controls.remove("zoomControl");
+      myMap.controls.remove("searchControl");
+
+      createRoute = () => {
+        //console.log(`Coordinates: ${coordsFrom} ${coordsTo}`);
+        var multiRoute = new ymaps.multiRouter.MultiRoute({
+          referencePoints: [coordsFrom, coordsTo],
+        },
+          {
+            editorDrawOver: false,
+            wayPointDraggable: true,
+            viaPointDraggable: true,
+            // Setting a custom design for multi-route lines.
+            routeStrokeColor: "000088",
+            routeActiveStrokeColor: "00AA00",
+            pinIconFillColor: "ff0000",
+            boundsAutoApply: true,
+            zoomMargin: 20
+          });
+        myMap.geoObjects.add(multiRoute);
+      }
+
+      suggestViewFunc = (suggestView, iconColor, text) => {
+        suggestView.events.add('select', (e) => {
+          const suggestion = e.get('item').value;
+          ymaps.geocode(suggestion).then((res) => {
+            const firstGeoObject = res.geoObjects.get(0);
+            const coords = firstGeoObject.geometry.getCoordinates();
+            if(text==="From"){
+              coordsFrom = coords;
+            }else if(text==="To"){
+              coordsTo = coords;
+            }
+            let selectedLocation = new ymaps.Placemark(coords, {
+              hintContent: `${text}: ${suggestion}`
+            }, { iconColor: iconColor });
+            myMap.geoObjects.add(selectedLocation);
+            myMap.panTo(coords, { duration: 500 });
+          });
+        });
+      }
+
+      suggestViewFunc(suggestViewFrom, '#FF0000', 'From');
+      suggestViewFunc(suggestViewTo, '#00FF00', 'To');
+
+      myMap.events.add('click', function (e) {
+        var coords = e.get('coords');
+        window.ReactNativeWebView.postMessage(JSON.stringify(coords));
+        if (myPlacemark) {
+          myPlacemark.geometry.setCoordinates(coords);
+        } else {
+          myPlacemark = new ymaps.Placemark(coords, {
+            hintContent: 'Clicked location',
+          });
+          myMap.geoObjects.add(myPlacemark);
+        }
+      });
+
+
+    });
+
+  </script>
+  <style>
+    html,
+    body,
+    #map {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+
+    #searchInputFrom {
+      position: absolute;
+      width: 70%;
+      height: 30px;
+      border-radius: 4px;
+      padding-left: 10px;
+      bottom: 150px;
+      left: 10px;
+      z-index: 1;
+      border: 1px solid #CCC;
+    
+    }
+
+    #searchInputTo {
+      position: absolute;
+      width: 70%;
+      height: 30px;
+      border-radius: 4px;
+      padding-left: 10px;
+      bottom: 110px;
+      left: 10px;
+      z-index: 1;
+      border: 1px solid #CCC;
+    }
+
+    #createRoute {
+      position: absolute;
+      background-color: rgb(255, 223, 17);
+      color: #555;
+      border: none;
+      height: 24px;
+      width: 100px;
+      bottom: 80px;
+      left: 10px;
+      border-radius: 5px;
+      z-index: 1;
+    }
+  </style>
+</body>
+
+</html>

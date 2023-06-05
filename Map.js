@@ -6,10 +6,10 @@ import { useAssets } from "expo-asset";
 import { readAsStringAsync } from 'expo-file-system';
 
 
-const Main = () => {
-    const [location, setLocation] = useState(null);
-    const [index, indexLoadingError] = useAssets(require("./map.html"));
-    const mapHtml = Asset.fromModule(require("./map.html")).uri;
+const Map = () => {
+    //const [location, setLocation] = useState(null);
+    const [index, indexLoadingError] = useAssets(require("./assets/map.html"));
+    const mapHtml = Asset.fromModule(require("./assets/map.html")).uri;
     const [html, setHtml] = useState("");
 
     if (index) {
@@ -29,8 +29,8 @@ const Main = () => {
           if (dataPayload.type === 'Console') {
             console.log(`[Console] ${JSON.stringify(dataPayload.data)}`);
           } else {
-            setLocation(dataPayload);
-            console.log(dataPayload);
+            //setLocation(dataPayload);
+            //console.log(dataPayload);
           }
         }
       };
@@ -44,12 +44,12 @@ const Main = () => {
                 source={{ html }}
                 onMessage={onMessage}
             />
-            <Button
+            {/* <Button
                 title="Log Location"
                 onPress={() => console.log(location)}
-            />
+            /> */}
         </View>
     );
 }
 
-export default Main;
+export default Map;
